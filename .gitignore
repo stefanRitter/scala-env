@@ -5,3 +5,5 @@
 .project
 .settings
 .worksheet/
+target/
+bin/
