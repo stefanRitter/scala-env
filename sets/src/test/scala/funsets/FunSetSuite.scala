@@ -14,7 +14,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class FunSetSuite extends FunSuite {
 
-
   /**
    * Link to the scaladoc - very clear and detailed tutorial of FunSuite
    *
@@ -47,30 +46,29 @@ class FunSetSuite extends FunSuite {
     assert(1 + 2 === 3)
   }
 
-  
   import FunSets._
 
   test("contains is implemented") {
     assert(contains(x => true, 100))
   }
-  
+
   /**
    * When writing tests, one would often like to re-use certain values for multiple
    * tests. For instance, we would like to create an Int-set and have multiple test
    * about it.
-   * 
+   *
    * Instead of copy-pasting the code for creating the set into every test, we can
    * store it in the test class using a val:
-   * 
+   *
    *   val s1 = singletonSet(1)
-   * 
+   *
    * However, what happens if the method "singletonSet" has a bug and crashes? Then
    * the test methods are not even executed, because creating an instance of the
    * test class fails!
-   * 
+   *
    * Therefore, we put the shared values into a separate trait (traits are like
    * abstract classes), and create an instance inside each test method.
-   * 
+   *
    */
 
   trait TestSets {
@@ -82,15 +80,15 @@ class FunSetSuite extends FunSuite {
   /**
    * This test is currently disabled (by using "ignore") because the method
    * "singletonSet" is not yet implemented and the test would fail.
-   * 
+   *
    * Once you finish your implementation of "singletonSet", exchange the
    * function "ignore" by "test".
    */
-  ignore("singletonSet(1) contains 1") {
-    
+  test("singletonSet(1) contains 1") {
+
     /**
      * We create a new instance of the "TestSets" trait, this gives us access
-     * to the values "s1" to "s3". 
+     * to the values "s1" to "s3".
      */
     new TestSets {
       /**
@@ -101,7 +99,7 @@ class FunSetSuite extends FunSuite {
     }
   }
 
-  ignore("union contains all elements") {
+  test("union contains all elements") {
     new TestSets {
       val s = union(s1, s2)
       assert(contains(s, 1), "Union 1")
@@ -109,4 +107,67 @@ class FunSetSuite extends FunSuite {
       assert(!contains(s, 3), "Union 3")
     }
   }
+
+  test("intersect contains all intersecting elements") {
+    new TestSets {
+      val s = union(s1, s2)
+      val i = intersect(s, s1)
+      assert(contains(i, 1), "Intersect 1")
+    }
+  }
+
+  test("diff contains the different elements") {
+    new TestSets {
+      val a = union(s1, s2)
+      val b = union(s2, s3)
+      val d1 = diff(a, b)
+      val d2 = diff(b, a)
+      assert(contains(d1, 1), "Diff 1")
+      assert(!contains(d1, 3), "Not Diff 3")
+      assert(contains(d2, 3), "Diff 3")
+      assert(!contains(d2, 1), "Not Diff 1")
+    }
+  }
+
+  test("filter contains all filtered elements") {
+    new TestSets {
+      val s = union(s1, s2)
+      val f = filter(s, s1)
+      assert(contains(f, 1), "Filter 1")
+    }
+  }
+
+  test("forall retruns true when elements satisfy the condition") {
+    new TestSets {
+      val ux = union(s1, s2)
+      val u = union(ux, s3)
+      assert(forall(u, x => x < 4), "all elem are smaller than 4")
+      assert(!forall(u, x => x > 1), "not all elem are bigger than 1")
+    }
+  }
+
+  test("exists retruns true when at least one element satisfies the condition") {
+    new TestSets {
+      val ux = union(s1, s2)
+      val u = union(ux, s3)
+      assert(exists(u, x => x > 0), "all elem are larger than 0")
+      assert(!exists(u, x => x < 0), "no elem is smaller than 0")
+      assert(exists(u, x => x > 2), "one elem (3) is larger than 2")
+      assert(exists(u, x => x < 2), "one elem (1) is smaller than 2")
+      assert(exists(u, x => x == 2), "one elem (2) is equal 2")
+      assert(!exists(u, x => x == 4), "there is no element 4")
+    }
+  }
+
+  test("map retruns a new set with f applied") {
+    new TestSets {
+      val ux = union(s1, s2)
+      val u = union(ux, s3)
+      val m = map(u, x => x * x)
+      assert(contains(m, 1), "Map 1")
+      assert(contains(m, 4), "Map 4")
+      assert(contains(m, 9), "Map 9")
+    }
+  }
+
 }
