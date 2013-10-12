@@ -37,14 +37,14 @@ object Main {
   /**
    * Exercise 3
    */
-    def countChange(money: Int, coins: List[Int]): Int = {
+  def countChange(money: Int, coins: List[Int]): Int = {
 
     def loop(currMoney: Int, currCoins: List[Int]): Int =
-    	if (currMoney == 0) 1
-    	else if (currMoney < 0) 0
+      if (currMoney == 0) 1
+      else if (currMoney < 0) 0
       else if (currCoins.isEmpty && currMoney > 0) 0
       else loop(currMoney, currCoins.tail) + loop(currMoney - currCoins.head, currCoins)
 
     loop(money, coins)
-  }  
+  }
 }
