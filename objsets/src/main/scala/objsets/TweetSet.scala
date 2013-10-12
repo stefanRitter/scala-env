@@ -9,7 +9,7 @@ import TweetReader._
 class Tweet(val user: String, val text: String, val retweets: Int) {
   override def toString: String =
     "User: " + user + "\n" +
-    "Text: " + text + " [" + retweets + "]"
+      "Text: " + text + " [" + retweets + "]"
 }
 
 /**
@@ -34,7 +34,9 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
  * [1] http://en.wikipedia.org/wiki/Binary_search_tree
  */
 abstract class TweetSet {
-  
+
+  def isEmpty(): Boolean
+
   /**
    * This method takes a predicate and returns a subset of all the elements
    * in the original set for which the predicate is true.
@@ -42,7 +44,7 @@ abstract class TweetSet {
    * Question: Can we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def filter(p: Tweet => Boolean): TweetSet = 
+  def filter(p: Tweet => Boolean): TweetSet =
     filterAcc(p, new Empty)
 
   /**
@@ -56,7 +58,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-   def union(that: TweetSet): TweetSet = filterAcc(x => true , that)
+  def union(that: TweetSet): TweetSet = filterAcc(x => true, that)
 
   /**
    * Returns the tweet from this set which has the greatest retweet count.
@@ -67,7 +69,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def mostRetweeted: Tweet = ???
+  def mostRetweeted: Tweet
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -78,8 +80,13 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def descendingByRetweet: TweetList = ???
 
+  def descendingByRetweet: TweetList =
+    if (isEmpty) Nil
+    else {
+      val mrt = mostRetweeted
+      new Cons(mrt, remove(mrt).descendingByRetweet)
+    }
 
   /**
    * The following methods are already implemented
@@ -109,11 +116,13 @@ abstract class TweetSet {
   def foreach(f: Tweet => Unit): Unit
 }
 
-
 class Empty extends TweetSet {
-    
+
+  def isEmpty(): Boolean = true
+
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
 
+  def mostRetweeted: Tweet = throw new NoSuchElementException
 
   /**
    * The following methods are already implemented
@@ -128,12 +137,24 @@ class Empty extends TweetSet {
   def foreach(f: Tweet => Unit): Unit = ()
 }
 
-
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
+
+  def isEmpty(): Boolean = false
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
     if (p(elem)) left.filterAcc(p, right.filterAcc(p, acc.incl(elem)))
     else left.filterAcc(p, right.filterAcc(p, acc))
+
+  def mostRetweeted: Tweet = {
+    def maxReTweet(t1: Tweet, t2: Tweet): Tweet =
+      if (t1.retweets > t2.retweets) t1
+      else t2
+
+    if (left.isEmpty && right.isEmpty) elem
+    else if (right.isEmpty) maxReTweet(left.mostRetweeted, elem)
+    else if (left.isEmpty) maxReTweet(right.mostRetweeted, elem)
+    else maxReTweet(right.mostRetweeted, maxReTweet(left.mostRetweeted, elem))
+  }
 
   /**
    * The following methods are already implemented
@@ -182,7 +203,6 @@ object Nil extends TweetList {
 class Cons(val head: Tweet, val tail: TweetList) extends TweetList {
   def isEmpty = false
 }
-
 
 object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
