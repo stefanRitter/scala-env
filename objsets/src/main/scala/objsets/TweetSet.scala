@@ -35,8 +35,6 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
  */
 abstract class TweetSet {
   
-  def isEmpty(): Boolean
-
   /**
    * This method takes a predicate and returns a subset of all the elements
    * in the original set for which the predicate is true.
@@ -58,7 +56,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-   def union(that: TweetSet): TweetSet = ???
+   def union(that: TweetSet): TweetSet = filterAcc(x => true , that)
 
   /**
    * Returns the tweet from this set which has the greatest retweet count.
@@ -111,9 +109,8 @@ abstract class TweetSet {
   def foreach(f: Tweet => Unit): Unit
 }
 
+
 class Empty extends TweetSet {
-  
-  def isEmpty(): Boolean = true
     
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
 
@@ -131,9 +128,8 @@ class Empty extends TweetSet {
   def foreach(f: Tweet => Unit): Unit = ()
 }
 
+
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
-  
-  def isEmpty(): Boolean = false
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
     if (p(elem)) left.filterAcc(p, right.filterAcc(p, acc.incl(elem)))
